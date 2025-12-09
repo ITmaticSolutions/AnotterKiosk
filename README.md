@@ -137,3 +137,4 @@ This allows for a number of different mechanisms to be self-hosted, even without
 ## Inspiration / Other Kiosk-OSes:
 - https://github.com/jareware/chilipie-kiosk/
 - https://github.com/guysoft/FullPageOS
+# Build Tue Dec  9 12:04:50 CET 2025
