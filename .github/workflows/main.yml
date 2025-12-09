@@ -55,6 +55,7 @@ jobs:
         with:
           path: raspios.img.xz
           key: raspios-arm64-2025-12-04-681a775e20b53a9e
+          save-always: true
 
       - name: Build arm64 (Raspberry Pi 4/5) firmware
         run: |
