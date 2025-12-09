@@ -1,0 +1,42 @@
+#!/bin/bash
+# Veilig script om kioskbrowser.ini te updaten
+# Alleen toegankelijk via sudo voor www-data
+
+INI_FILE="/boot/firmware/kioskbrowser.ini"
+TEMP_FILE="$1"
+
+# Validatie: controleer of argument gegeven is
+if [ -z "$TEMP_FILE" ]; then
+    echo "Usage: kiosk-update-ini <temp_file>" >&2
+    exit 1
+fi
+
+# Validatie: temp file moet in /tmp staan en beginnen met kioskbrowser_
+if [[ ! "$TEMP_FILE" =~ ^/tmp/kioskbrowser_[a-zA-Z0-9]+\.ini$ ]]; then
+    echo "Error: Invalid temp file path" >&2
+    exit 1
+fi
+
+# Validatie: temp file moet bestaan
+if [ ! -f "$TEMP_FILE" ]; then
+    echo "Error: Temp file does not exist" >&2
+    exit 1
+fi
+
+# Validatie: temp file moet een geldig ini bestand zijn (basis check)
+if ! grep -q '^\[general\]' "$TEMP_FILE" 2>/dev/null; then
+    echo "Error: Invalid ini file format" >&2
+    exit 1
+fi
+
+# Kopieer het bestand
+cp "$TEMP_FILE" "$INI_FILE"
+EXIT_CODE=$?
+
+# Verwijder temp file
+rm -f "$TEMP_FILE"
+
+exit $EXIT_CODE
+
+
+

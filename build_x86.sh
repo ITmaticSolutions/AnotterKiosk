@@ -50,6 +50,12 @@ sudo debootstrap --include=linux-image-amd64,grub-efi,sudo --arch amd64 trixie "
 sudo rsync -a "${SCRIPT_DIR}/x86_skeleton/." "${BUILD_DIR}"
 sudo rsync -a "${SCRIPT_DIR}/kiosk_skeleton/." "${BUILD_DIR}/kiosk_skeleton"
 
+# Copy custom files to bootfs (kioskbrowser.ini, www-public, etc.)
+if [ -d "${SCRIPT_DIR}/custom" ]; then
+    echo "Copying custom files to bootfs..."
+    sudo rsync -av "${SCRIPT_DIR}/custom/." "${BUILD_DIR}/boot/firmware/" || true
+fi
+
 # Create fstab
 fat_uuid=$(lsblk -no UUID "${ld}p1")
 ext_uuid=$(lsblk -no UUID "${ld}p2")

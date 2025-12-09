@@ -102,24 +102,57 @@ fi
 # start chromium
 URL=$(get-ini /boot/firmware/kioskbrowser.ini browser url)
 chromium --start-fullscreen \
+		 --kiosk \
 		 --allow-insecure-localhost \
 		 --autoplay-policy=no-user-gesture-required \
-		 --check-for-update-interval=1 \
+		 --lang=nl \
+		 --accept-lang=nl-NL \
+		 \
+		 --disable-features=Translate,TranslateUI,LocalNetworkAccessPermissionPrompt,site-per-process,IsolateOrigins,SitePerProcess \
+		 --disable-site-isolation-trials \
+		 \
+		 --renderer-process-limit=1 \
+		 --process-per-site \
+		 --in-process-gpu \
+		 --js-flags="--max-old-space-size=256 --optimize-for-size --gc-interval=100" \
+		 \
+		 --enable-gpu-rasterization \
+		 --enable-zero-copy \
+		 --ignore-gpu-blocklist \
+		 --num-raster-threads=2 \
+		 --enable-oop-rasterization \
+		 \
+		 --disable-background-networking \
+		 --disable-background-timer-throttling \
+		 --disable-backgrounding-occluded-windows \
+		 --disable-renderer-backgrounding \
+		 --disable-client-side-phishing-detection \
+		 --disable-domain-reliability \
 		 --disable-component-update \
-		 --disable-features=Translate \
-		 --disable-features=TranslateUI \
+		 --disable-default-apps \
+		 --disable-extensions \
+		 --disable-sync \
+		 --disable-translate \
+		 --safebrowsing-disable-auto-update \
+		 \
+		 --disable-hang-monitor \
 		 --disable-infobars \
 		 --disable-pinch \
 		 --disable-session-crashed-bubble \
 		 --disable-smooth-scrolling \
-		 --kiosk \
+		 --disable-popup-blocking \
+		 --disable-prompt-on-repost \
 		 --noerrdialogs \
+		 --no-first-run \
+		 --no-memcheck \
+		 \
 		 --overscroll-history-navigation=0 \
+		 --check-for-update-interval=1 \
 		 --simulate-critical-update \
 		 --simulate-outdated-no-au='Tue, 31 Dec 2099 23:59:59 GMT' \
 		 --touch-events=enabled \
-		 --process-per-site \
-		 --no-memcheck \
+		 --disk-cache-size=52428800 \
+		 \
 		 ${CHROME_DARK_MODE_FLAGS} \
 		 ${CHROME_GPU_FLAGS} \
 		 ${CHROME_LOW_END_FLAGS} \

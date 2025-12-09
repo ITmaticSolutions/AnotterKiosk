@@ -66,6 +66,12 @@ sudo mount /dev/loop0p1 "${BUILD_DIR}/boot/firmware"
 sudo rsync -a "${SCRIPT_DIR}/raspberry_pi_skeleton/." "${BUILD_DIR}" || true
 sudo rsync -a "${SCRIPT_DIR}/kiosk_skeleton/." "${BUILD_DIR}/kiosk_skeleton" || true
 
+# Copy custom files to bootfs (kioskbrowser.ini, www-public, etc.)
+if [ -d "${SCRIPT_DIR}/custom" ]; then
+    echo "Copying custom files to bootfs..."
+    sudo rsync -av "${SCRIPT_DIR}/custom/." "${BUILD_DIR}/boot/firmware/" || true
+fi
+
 # Use correct architecture specific (arm64/armhf) config.txt
 sudo rm "${BUILD_DIR}/boot/firmware/config.txt"
 sudo mv "${BUILD_DIR}/boot/firmware/config-${IMAGE_SUFFIX}.txt" "${BUILD_DIR}/boot/firmware/config.txt"
