@@ -18,18 +18,32 @@ losetup -D /dev/loop0 || true
 rm -rf "${BUILD_DIR}" || true
 mkdir -p "${BUILD_DIR}"
 
-# delete any old image (comment this when testing locally)
-rm raspios.img.xz || true
-
-# download a modern RaspiOS build
+# download a modern RaspiOS build (use cache if available)
 if [ ! -f raspios.img.xz ]
 then
+	echo "Downloading Raspberry Pi OS image..."
 	wget -nv -O raspios.img.xz "${RASPIOS_URL}"
 	echo "${RASPIOS_SHA256} raspios.img.xz" | sha256sum --check --status
 	if [ $? -ne 0 ]
 	then
 	    echo "downloaded raspios does not match checksum";
 	    return -1;
+	fi
+else
+	echo "Using cached Raspberry Pi OS image..."
+	# Verify cached image checksum
+	echo "${RASPIOS_SHA256} raspios.img.xz" | sha256sum --check --status
+	if [ $? -ne 0 ]
+	then
+	    echo "Cached image checksum mismatch, re-downloading..."
+	    rm raspios.img.xz
+	    wget -nv -O raspios.img.xz "${RASPIOS_URL}"
+	    echo "${RASPIOS_SHA256} raspios.img.xz" | sha256sum --check --status
+	    if [ $? -ne 0 ]
+	    then
+	        echo "downloaded raspios does not match checksum";
+	        return -1;
+	    fi
 	fi
 fi
 
@@ -63,13 +77,15 @@ sudo mount /dev/loop0p2 "${BUILD_DIR}"
 sudo mount /dev/loop0p1 "${BUILD_DIR}/boot/firmware"
 
 # Copy the (raspberry pi-specific) skeleton files
-sudo rsync -a "${SCRIPT_DIR}/raspberry_pi_skeleton/." "${BUILD_DIR}" || true
+# Note: --no-owner --no-group for FAT32 boot partition compatibility
+sudo rsync -a --no-owner --no-group "${SCRIPT_DIR}/raspberry_pi_skeleton/." "${BUILD_DIR}" || true
 sudo rsync -a "${SCRIPT_DIR}/kiosk_skeleton/." "${BUILD_DIR}/kiosk_skeleton" || true
 
 # Copy custom files to bootfs (kioskbrowser.ini, www-public, etc.)
+# FAT32 doesn't support Unix permissions, so skip owner/group
 if [ -d "${SCRIPT_DIR}/custom" ]; then
     echo "Copying custom files to bootfs..."
-    sudo rsync -av "${SCRIPT_DIR}/custom/." "${BUILD_DIR}/boot/firmware/" || true
+    sudo rsync -av --no-owner --no-group "${SCRIPT_DIR}/custom/." "${BUILD_DIR}/boot/firmware/" || true
 fi
 
 # Use correct architecture specific (arm64/armhf) config.txt

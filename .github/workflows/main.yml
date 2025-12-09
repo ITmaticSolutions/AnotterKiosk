@@ -21,6 +21,22 @@ jobs:
       - name: Set up QEMU for ARM emulation
         uses: docker/setup-qemu-action@v3
 
+      - name: Cache apt packages
+        uses: actions/cache@v4
+        with:
+          path: /var/cache/apt
+          key: apt-${{ runner.os }}-${{ hashFiles('**/build_raspberry_pi.sh') }}
+          restore-keys: |
+            apt-${{ runner.os }}-
+
+      - name: Cache Raspberry Pi OS image
+        uses: actions/cache@v4
+        with:
+          path: raspios.img.xz
+          key: raspios-arm64-2025-12-04-681a775e20b53a9e4c7341d748a5a8cdc822039d8c67c1fd6ca35927abbe6290
+          restore-keys: |
+            raspios-arm64-2025-12-04-
+
       - name: Install dependencies
         run: |
           sudo apt update -qq
