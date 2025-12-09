@@ -30,10 +30,11 @@ jobs:
             apt-${{ runner.os }}-
 
       - name: Cache Raspberry Pi OS image
+        id: cache-raspios
         uses: actions/cache@v4
         with:
           path: raspios.img.xz
-          key: raspios-arm64-2025-12-04-681a775e20b53a9e4c7341d748a5a8cdc822039d8c67c1fd6ca35927abbe6290
+          key: raspios-arm64-2025-12-04-681a775e20b53a9e
           restore-keys: |
             raspios-arm64-2025-12-04-
 
@@ -42,6 +43,19 @@ jobs:
           sudo apt update -qq
           sudo apt install -yqq qemu-utils qemu-user-static binfmt-support rsync sudo wget xz-utils pigz mount dosfstools libarchive-tools zerofree util-linux e2fsprogs fdisk
           
+      - name: Download Raspberry Pi OS image (if not cached)
+        if: steps.cache-raspios.outputs.cache-hit != 'true'
+        run: |
+          wget -nv -O raspios.img.xz "https://downloads.raspberrypi.org/raspios_lite_arm64/images/raspios_lite_arm64-2025-12-04/2025-12-04-raspios-trixie-arm64-lite.img.xz"
+          echo "681a775e20b53a9e4c7341d748a5a8cdc822039d8c67c1fd6ca35927abbe6290 raspios.img.xz" | sha256sum --check --status
+
+      - name: Save Raspberry Pi OS image to cache
+        if: steps.cache-raspios.outputs.cache-hit != 'true'
+        uses: actions/cache@v4
+        with:
+          path: raspios.img.xz
+          key: raspios-arm64-2025-12-04-681a775e20b53a9e
+
       - name: Build arm64 (Raspberry Pi 4/5) firmware
         run: |
           chmod +x ./build_raspberry_pi.sh
