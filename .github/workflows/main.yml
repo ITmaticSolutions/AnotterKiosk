@@ -51,11 +51,10 @@ jobs:
 
       - name: Save Raspberry Pi OS image to cache
         if: steps.cache-raspios.outputs.cache-hit != 'true'
-        uses: actions/cache@v4
+        uses: actions/cache/save@v4
         with:
           path: raspios.img.xz
           key: raspios-arm64-2025-12-04-681a775e20b53a9e
-          save-always: true
 
       - name: Build arm64 (Raspberry Pi 4/5) firmware
         run: |
