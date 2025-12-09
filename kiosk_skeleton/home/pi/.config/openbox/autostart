@@ -108,8 +108,15 @@ chromium --start-fullscreen \
 		 --lang=nl \
 		 --accept-lang=nl-NL \
 		 \
-		 --disable-features=Translate,TranslateUI,LocalNetworkAccessPermissionPrompt,site-per-process,IsolateOrigins,SitePerProcess \
+		 --disable-features=Translate,TranslateUI,TranslateNewUX,LocalNetworkAccessPermissionPrompt,site-per-process,IsolateOrigins,SitePerProcess \
 		 --disable-site-isolation-trials \
+		 --disable-translate \
+		 --disable-notifications \
+		 --disable-infobars \
+		 --disable-prompt-on-repost \
+		 --disable-save-password-bubble \
+		 --disable-single-click-autofill \
+		 --disable-features=AutofillServerCommunication \
 		 \
 		 --renderer-process-limit=1 \
 		 --process-per-site \
