@@ -9,6 +9,11 @@ DEBIAN_FRONTEND=noninteractive apt install -y wget curl fonts-noto-color-emoji l
 
 rsync -a --chown=root:root "/kiosk_skeleton/." "/"
 
+# Zorg dat alle kiosk scripts executable zijn
+chmod +x /usr/bin/kiosk-*
+chmod +x /usr/bin/get-ini
+chmod +x /usr/bin/cache-clear-timer
+
 # Raspberry Pi specific modifications
 # raspberrypi-net-mods does things like copying /boot/firmware/wpa_supplicant.conf to the root FS
 apt remove -y raspberrypi-net-mods || true

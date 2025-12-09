@@ -1,1 +1,4 @@
-www-data ALL=(ALL) NOPASSWD: ALL
+# Beperkte rechten voor kiosk webinterface
+# Alleen reboot en het updaten van de kioskbrowser.ini zijn toegestaan
+www-data ALL=(ALL) NOPASSWD: /sbin/reboot
+www-data ALL=(ALL) NOPASSWD: /usr/bin/kiosk-update-ini
