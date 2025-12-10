@@ -11,10 +11,30 @@ export PATH=$PATH:/usr/sbin
 
 SCRIPT_DIR="$(dirname "$(realpath "$0")")"
 BUILD_DIR="${SCRIPT_DIR}/work/root/"
+LOOP_DEVICE=""
+
+# Cleanup function for error handling
+cleanup() {
+    echo "Cleaning up..."
+    sudo umount -fl "${BUILD_DIR}/boot/firmware" 2>/dev/null || true
+    sudo umount -fl "${BUILD_DIR}/proc" 2>/dev/null || true
+    sudo umount -fl "${BUILD_DIR}/sys" 2>/dev/null || true
+    sudo umount -fl "${BUILD_DIR}/dev" 2>/dev/null || true
+    sudo umount -fl "${BUILD_DIR}" 2>/dev/null || true
+    if [ -n "${LOOP_DEVICE}" ]; then
+        sudo losetup -d "${LOOP_DEVICE}" 2>/dev/null || true
+    fi
+}
+trap cleanup EXIT ERR
 
 # cleanup any previous build attempts
-umount -fl "${BUILD_DIR}" || true
-losetup -D /dev/loop0 || true
+umount -fl "${BUILD_DIR}/boot/firmware" 2>/dev/null || true
+umount -fl "${BUILD_DIR}/proc" 2>/dev/null || true
+umount -fl "${BUILD_DIR}/sys" 2>/dev/null || true
+umount -fl "${BUILD_DIR}/dev" 2>/dev/null || true
+umount -fl "${BUILD_DIR}" 2>/dev/null || true
+# Cleanup any existing loop devices
+sudo losetup -D 2>/dev/null || true
 rm -rf "${BUILD_DIR}" || true
 mkdir -p "${BUILD_DIR}"
 
@@ -56,13 +76,15 @@ truncate -s +3G raspikiosk.img
 echo ", +" | sfdisk -N2 ./raspikiosk.img
 
 # Setup loop device for Raspberry Pi image (with partition scanning)
-sudo losetup -P /dev/loop0 raspikiosk.img
+# Use automatic loop device detection for WSL compatibility
+LOOP_DEVICE=$(sudo losetup --show -f -P raspikiosk.img)
+echo "Using loop device: ${LOOP_DEVICE}"
 
 # Resize partition
-sudo resize2fs /dev/loop0p2
+sudo resize2fs "${LOOP_DEVICE}p2"
 
 # Manually set PARTUUID to 0x23421312
-sudo fdisk /dev/loop0 <<EOF > /dev/null
+sudo fdisk "${LOOP_DEVICE}" <<EOF > /dev/null
 p
 x
 i
@@ -73,8 +95,8 @@ w
 EOF
 
 # Mount partitions
-sudo mount /dev/loop0p2 "${BUILD_DIR}"
-sudo mount /dev/loop0p1 "${BUILD_DIR}/boot/firmware"
+sudo mount "${LOOP_DEVICE}p2" "${BUILD_DIR}"
+sudo mount "${LOOP_DEVICE}p1" "${BUILD_DIR}/boot/firmware"
 
 # Copy the (raspberry pi-specific) skeleton files
 # Note: --no-owner --no-group for FAT32 boot partition compatibility
@@ -128,9 +150,10 @@ sudo umount "${BUILD_DIR}/boot/firmware" || true
 sudo umount "${BUILD_DIR}" || true
 
 # set all empty blocks on ext4 to 0x00 (for better compression)
-sudo zerofree /dev/loop0p2
+sudo zerofree "${LOOP_DEVICE}p2"
 
-sudo losetup -D /dev/loop0
+# Cleanup loop device
+sudo losetup -d "${LOOP_DEVICE}" || true
 
 tag=$(git describe --abbrev=4 --dirty --always --tags)
 mv raspikiosk.img anotterkiosk-${tag}-${IMAGE_SUFFIX}.img

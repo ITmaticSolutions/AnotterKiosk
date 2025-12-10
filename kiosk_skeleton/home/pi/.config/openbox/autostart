@@ -120,7 +120,6 @@ chromium --start-fullscreen \
 		 \
 		 --renderer-process-limit=1 \
 		 --process-per-site \
-		 --in-process-gpu \
 		 --js-flags="--max-old-space-size=256 --optimize-for-size --gc-interval=100" \
 		 \
 		 --enable-gpu-rasterization \
